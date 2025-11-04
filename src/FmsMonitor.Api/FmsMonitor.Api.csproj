@@ -9,31 +9,31 @@
 
   <ItemGroup>
     <!-- ASP.NET Core -->
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.10" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
 
     <!-- Database -->
-    <PackageReference Include="Dapper" Version="2.1.35" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
-    <PackageReference Include="Npgsql" Version="9.0.2" />
-    <PackageReference Include="Pgvector" Version="0.2.2" />
+    <PackageReference Include="Dapper" Version="2.1.66" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.2" />
+    <PackageReference Include="Npgsql" Version="9.0.4" />
+    <PackageReference Include="Pgvector" Version="0.3.2" />
 
     <!-- AI/ML -->
-    <PackageReference Include="Microsoft.SemanticKernel" Version="1.28.0" />
-    <PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.28.0-alpha" />
-    <PackageReference Include="OllamaSharp" Version="3.0.8" />
+    <PackageReference Include="Microsoft.SemanticKernel" Version="1.67.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.67.0" />
+    <PackageReference Include="OllamaSharp" Version="5.4.8" />
 
     <!-- Logging -->
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
-    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
-    <PackageReference Include="Serilog.Sinks.MSSqlServer" Version="7.0.2" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="Serilog.Sinks.MSSqlServer" Version="9.0.2" />
 
     <!-- Email -->
-    <PackageReference Include="MailKit" Version="4.8.0" />
+    <PackageReference Include="MailKit" Version="4.14.1" />
 
     <!-- Utilities -->
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 
 </Project>
