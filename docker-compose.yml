@@ -1,0 +1,113 @@
+version: '3.8'
+
+services:
+  # SQL Server
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: fms-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=FmsMonitor123!
+      - MSSQL_PID=Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+      - ./sql/sqlserver-schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - fms-network
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P FmsMonitor123! -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  # PostgreSQL with pgvector
+  postgres:
+    image: ankane/pgvector:latest
+    container_name: fms-postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=FmsMonitor123!
+      - POSTGRES_DB=fms_monitor_vector
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./sql/postgresql-schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - fms-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Ollama (for AI models)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: fms-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - fms-network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    # Note: Sau khi container chạy, cần pull models:
+    # docker exec -it fms-ollama ollama pull gpt-oss:120b-cloud
+    # docker exec -it fms-ollama ollama pull nomic-embed-text
+
+  # FMS Monitor API
+  fms-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fms-monitor-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__SqlServer=Server=sqlserver;Database=FmsMonitor;User Id=sa;Password=FmsMonitor123!;TrustServerCertificate=True
+      - ConnectionStrings__PostgreSQL=Host=postgres;Port=5432;Database=fms_monitor_vector;Username=postgres;Password=FmsMonitor123!
+      - Ollama__Endpoint=http://ollama:11434
+      - Email__SmtpHost=${SMTP_HOST:-smtp.gmail.com}
+      - Email__SmtpPort=${SMTP_PORT:-587}
+      - Email__FromEmail=${FROM_EMAIL:-noreply@fmsmonitor.com}
+      - Email__Username=${EMAIL_USERNAME}
+      - Email__Password=${EMAIL_PASSWORD}
+    ports:
+      - "5001:80"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - fms-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  sqlserver-data:
+  postgres-data:
+  ollama-data:
+
+networks:
+  fms-network:
+    driver: bridge
